@@ -1,7 +1,6 @@
 package spartons.com.frisbeekotlin.activities.main.ui
 
 import android.Manifest
-import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_DENIED
@@ -86,9 +85,10 @@ class MainActivity : BaseActivity(), GoogleMap.OnCameraIdleListener {
                 showOrAnimateMarker(location)
             }
         viewModel.reverseGeocodeResult
-            .observe(this, Observer {
-                currentPlaceTextView.text = it
-            })
+            .nonNull()
+            .observe(this) { placeName ->
+                currentPlaceTextView.text = placeName
+            }
     }
 
     private fun requestLocationUpdates() {
