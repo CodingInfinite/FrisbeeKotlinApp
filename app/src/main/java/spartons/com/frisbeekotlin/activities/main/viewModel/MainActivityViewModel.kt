@@ -37,6 +37,7 @@ class MainActivityViewModel constructor(
     ViewModel(), CoroutineScope, FirebaseObjectValueListener {
 
     private val job = SupervisorJob()
+    private val firebaseValueEventListener = FirebaseValueEventListenerHelper(this)
     private val _currentLocation = NonNullMediatorLiveData<Location>()
     private val _reverseGeocodeResult = NonNullMediatorLiveData<String>()
     private val _addNewMarker = NonNullMediatorLiveData<Pair<String, MarkerOptions>>()
@@ -56,8 +57,7 @@ class MainActivityViewModel constructor(
         private const val ONLINE_DRIVERS = "online_drivers"
     }
 
-    init {
-        val firebaseValueEventListener = FirebaseValueEventListenerHelper(this)
+    init {    
         databaseReference.addChildEventListener(firebaseValueEventListener)
     }
 
@@ -134,6 +134,7 @@ class MainActivityViewModel constructor(
     override fun onCleared() {
         super.onCleared()
         job.cancel()
+        databaseReference.removeEventListener(firebaseValueEventListener)
         locationProviderClient.removeLocationUpdates(locationCallback)
     }
 }
