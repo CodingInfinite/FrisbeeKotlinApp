@@ -10,6 +10,7 @@ import android.location.Location
 import android.os.Bundle
 import android.provider.Settings
 import android.support.v4.app.ActivityCompat
+import android.util.Log
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
@@ -24,6 +25,8 @@ import spartons.com.frisbeekotlin.extensionFunction.nonNull
 import spartons.com.frisbeekotlin.extensionFunction.observe
 import spartons.com.frisbeekotlin.listeners.IPositiveNegativeListener
 import spartons.com.frisbeekotlin.listeners.LatLngInterpolator
+import spartons.com.frisbeekotlin.repo.DriverRepo
+import spartons.com.frisbeekotlin.repo.MarkerRepo
 import spartons.com.frisbeekotlin.util.GoogleMapHelper
 import spartons.com.frisbeekotlin.util.MarkerAnimationHelper
 import spartons.com.frisbeekotlin.util.UiHelper
@@ -33,12 +36,17 @@ class MainActivity : BaseActivity(), GoogleMap.OnCameraIdleListener {
 
     companion object {
         private const val MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 5655
+        private val TAG = MainActivity::class.java.simpleName
     }
 
     @Inject
     lateinit var uiHelper: UiHelper
     @Inject
     lateinit var googleMapHelper: GoogleMapHelper
+    @Inject
+    lateinit var driverRepo: DriverRepo
+    @Inject
+    lateinit var markerRepo: MarkerRepo
 
     private val geoCoderValue = lazy {
         Geocoder(this)
@@ -57,14 +65,16 @@ class MainActivity : BaseActivity(), GoogleMap.OnCameraIdleListener {
         getComponent().inject(this)
         val factory = MainActivityViewModelFactory(
             uiHelper,
-            LocationServices.getFusedLocationProviderClient(this)
+            LocationServices.getFusedLocationProviderClient(this),
+            driverRepo,
+            markerRepo,
+            googleMapHelper
         )
         viewModel = ViewModelProviders.of(this, factory).get(MainActivityViewModel::class.java)
         if (!uiHelper.isPlayServicesAvailable()) {
             uiHelper.toast("Play services is not installed!")
             finish()
-        } else
-            requestLocationUpdates()
+        } else requestLocationUpdates()
         val supportMapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         supportMapFragment.getMapAsync { googleMap ->
             this.googleMap = googleMap
@@ -88,6 +98,13 @@ class MainActivity : BaseActivity(), GoogleMap.OnCameraIdleListener {
             .nonNull()
             .observe(this) { placeName ->
                 currentPlaceTextView.text = placeName
+            }
+        viewModel.addNewMarker
+            .nonNull()
+            .observe(this) { markerPair ->
+                Log.e(TAG, "on main activity marker ${markerPair.first}")
+                val marker = googleMap.addMarker(markerPair.second)
+                viewModel.insertNewMarker(markerPair.first, marker)
             }
     }
 

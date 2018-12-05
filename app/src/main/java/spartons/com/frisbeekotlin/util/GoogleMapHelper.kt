@@ -58,4 +58,16 @@ class GoogleMapHelper @Inject constructor(private val resources: Resources) {
         googleMap.uiSettings.isCompassEnabled = false
         googleMap.isBuildingsEnabled = true
     }
+
+    /**
+     * @param position where to draw the [com.google.android.gms.maps.model.Marker]
+     * @return the [MarkerOptions] with given properties added to it.
+     */
+
+    fun getDriverMarkerOptions(position: LatLng, angle: Float): MarkerOptions {
+        val options = getMarkerOptions(position, R.drawable.caronmap)
+        options.flat(true)
+        options.rotation(angle + 90)
+        return options
+    }
 }
