@@ -12,6 +12,8 @@ class DriverRepo @Inject constructor(private val driverCollection: DriverCollect
 
     suspend fun get(driverId: String) = driverCollection.getDriverWithId(driverId)
 
+    suspend fun getNearestDriver(lat: Double, lng: Double) = driverCollection.getNearestDriver(lat, lng)
+
     fun allItems(): List<Driver> =
         driverCollection.allDriver()
 }

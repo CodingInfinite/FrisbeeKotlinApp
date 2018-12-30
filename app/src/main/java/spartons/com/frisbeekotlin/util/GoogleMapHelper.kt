@@ -9,14 +9,17 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.maps.GeoApiContext
 import spartons.com.frisbeekotlin.R
 import javax.inject.Inject
+
 
 class GoogleMapHelper @Inject constructor(private val resources: Resources) {
 
     companion object {
         private const val ZOOM_LEVEL = 18
         private const val TILT_LEVEL = 25
+        private val geoApiContextBuilder = GeoApiContext.Builder()
     }
 
     /**
@@ -70,4 +73,27 @@ class GoogleMapHelper @Inject constructor(private val resources: Resources) {
         options.rotation(angle + 90)
         return options
     }
+
+    /**
+     * @return the google distance api key.
+     */
+
+    private fun distanceApi(): String {
+        return resources.getString(R.string.google_distance_matrix_api_key)
+    }
+
+
+    /**
+     * The function returns the ${[GeoApiContext]} with distance api key.
+     *
+     * @return the ${[GeoApiContext]} with distance api.
+     */
+
+    fun geoContextDistanceApi(): GeoApiContext {
+        return geoApiContextBuilder
+            .apiKey(distanceApi())
+            .build()
+
+    }
+
 }

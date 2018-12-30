@@ -11,6 +11,8 @@ import android.os.Bundle
 import android.provider.Settings
 import android.support.v4.app.ActivityCompat
 import android.util.Log
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
@@ -32,7 +34,8 @@ import spartons.com.frisbeekotlin.util.MarkerAnimationHelper
 import spartons.com.frisbeekotlin.util.UiHelper
 import javax.inject.Inject
 
-class MainActivity : BaseActivity(), GoogleMap.OnCameraIdleListener {
+
+class MainActivity : BaseActivity(), GoogleMap.OnCameraIdleListener, GoogleMap.OnCameraMoveStartedListener {
 
     companion object {
         private const val MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 5655
@@ -106,6 +109,13 @@ class MainActivity : BaseActivity(), GoogleMap.OnCameraIdleListener {
                 val marker = googleMap.addMarker(markerPair.second)
                 viewModel.insertNewMarker(markerPair.first, marker)
             }
+        viewModel.calculateDistance
+            .nonNull()
+            .observe(this) { distance ->
+                pinTimeTextView.text = distance
+                pinTimeTextView.visibility = VISIBLE
+                pinProgressLoader.visibility = GONE
+            }
     }
 
     private fun requestLocationUpdates() {
@@ -137,6 +147,7 @@ class MainActivity : BaseActivity(), GoogleMap.OnCameraIdleListener {
         googleMapHelper.defaultMapSettings(googleMap)
         googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.style_json))
         googleMap.setOnCameraIdleListener(this)
+        googleMap.setOnCameraMoveStartedListener(this)
     }
 
     private fun animateCamera(location: Location) {
@@ -154,6 +165,7 @@ class MainActivity : BaseActivity(), GoogleMap.OnCameraIdleListener {
     override fun onCameraIdle() {
         val latLng = googleMap.cameraPosition.target
         viewModel.makeReverseGeocodeRequest(latLng, geoCoderValue.value)
+        viewModel.onCameraIdle(latLng)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
@@ -168,5 +180,10 @@ class MainActivity : BaseActivity(), GoogleMap.OnCameraIdleListener {
             if (grantResults[0] == PERMISSION_GRANTED)
                 requestLocationUpdates()
         }
+    }
+
+    override fun onCameraMoveStarted(p: Int) {
+        pinTimeTextView.visibility = GONE
+        pinProgressLoader.visibility = VISIBLE
     }
 }

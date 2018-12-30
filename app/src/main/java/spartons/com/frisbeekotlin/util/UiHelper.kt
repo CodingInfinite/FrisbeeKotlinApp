@@ -19,6 +19,7 @@ import spartons.com.frisbeekotlin.R
 import spartons.com.frisbeekotlin.listeners.IPositiveNegativeListener
 import javax.inject.Inject
 
+
 class UiHelper @Inject constructor(
     private val resources: Resources
     , private val context: Context
@@ -58,7 +59,7 @@ class UiHelper @Inject constructor(
         buildDialog(activity, title, content)
             .builder
             .positiveText(positiveText)
-            .positiveColor(getColor(R.color.colorPrimary, activity))
+            .positiveColor(getColor(R.color.colorPrimary))
             .onPositive { _, _ -> positiveNegativeListener.onPositive() }
             .cancelable(cancelable)
             .show()
@@ -71,7 +72,7 @@ class UiHelper @Inject constructor(
             .build()
     }
 
-    private fun getColor(color: Int, context: Context): Int {
+    private fun getColor(color: Int): Int {
         return ContextCompat.getColor(context, color)
     }
 
